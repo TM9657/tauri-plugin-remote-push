@@ -15,3 +15,21 @@ node_modules/
 
 dist-js
 dist
+
+# Android build outputs
+android/build/
+android/core-android/build/
+android/.gradle/
+*.apk
+*.aab
+local.properties
+
+# iOS build outputs
+ios/.build/
+ios/.swiftpm/
+
+# Codacy local cache
+.codacy/
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

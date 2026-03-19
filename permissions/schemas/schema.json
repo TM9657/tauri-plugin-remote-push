@@ -295,34 +295,34 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "Enables the ping command without any pre-configured scope.",
+          "description": "Enables the get_token command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-ping",
-          "markdownDescription": "Enables the ping command without any pre-configured scope."
+          "const": "allow-get-token",
+          "markdownDescription": "Enables the get_token command without any pre-configured scope."
         },
         {
-          "description": "Denies the ping command without any pre-configured scope.",
+          "description": "Denies the get_token command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-ping",
-          "markdownDescription": "Denies the ping command without any pre-configured scope."
+          "const": "deny-get-token",
+          "markdownDescription": "Denies the get_token command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the request_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-request-permission",
+          "markdownDescription": "Enables the request_permission command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the request_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-request-permission",
+          "markdownDescription": "Denies the request_permission command without any pre-configured scope."
         },
         {
           "description": "Default permissions for the remote-push plugin\n#### This default permission set includes:\n\n- `allow-get-token`\n- `allow-request-permission`",
           "type": "string",
           "const": "default",
           "markdownDescription": "Default permissions for the remote-push plugin\n#### This default permission set includes:\n\n- `allow-get-token`\n- `allow-request-permission`"
-        },
-        {
-          "description": "Allows retrieving the push notification token",
-          "type": "string",
-          "const": "allow-get-token",
-          "markdownDescription": "Allows retrieving the push notification token"
-        },
-        {
-          "description": "Allows requesting user permission for notifications",
-          "type": "string",
-          "const": "allow-request-permission",
-          "markdownDescription": "Allows requesting user permission for notifications"
         }
       ]
     }

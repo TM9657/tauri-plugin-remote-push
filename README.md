@@ -1,13 +1,13 @@
 # Tauri Plugin: Remote Push Notifications
 
-A plugin for Tauri v2 that enables applications to receive remote push notifications via Firebase Cloud Messaging (FCM) on Android and Apple Push Notification Service (APNs) on iOS.
+A plugin for Tauri v2 that enables applications to receive remote push notifications via Firebase Cloud Messaging (FCM) on Android and, when configured with Firebase on iOS, Firebase Cloud Messaging backed by Apple Push Notification Service (APNs).
 
 This plugin is self-contained and handles its own native dependencies. However, you must still perform some **manual modification of your native host application code** to integrate the necessary notification services.
 
 ## Prerequisites
 
 - A working Tauri v2 project.
-- A Firebase project for Android.
+- A Firebase project with Android and, if you want FCM tokens on iOS, an iOS app configured as well.
 - An Apple Developer account with push notification capabilities for iOS.
 - You must have generated the native mobile projects by running `tauri android init` and `tauri ios init`.
 
@@ -46,23 +46,6 @@ pub fn run() {
 }
 ```
 
-### 3. Configure the Plugin (Android)
-
-In your `src-tauri/tauri.conf.json` file, you must add the plugin configuration and provide your Firebase **Sender ID**. This allows the plugin to identify your application with Google's messaging services.
-
-You can find your Sender ID in the Firebase Console under **Project settings > Cloud Messaging**.
-
-```json
-// src-tauri/tauri.conf.json
-{
-  "plugins": {
-    "remote-push": {
-      "senderId": "YOUR_SENDER_ID_HERE"
-    }
-  }
-}
-```
-
 ---
 
 ## Platform-Specific Configuration
@@ -77,7 +60,14 @@ This is the **critical manual step** required to make the plugin functional.
     *   Click `+ Capability` and add **Push Notifications**.
     *   Click `+ Capability` again and add **Background Modes**. In the expanded section, check **Remote notifications**.
 
-2.  **Modify your AppDelegate**: Open `src-tauri/src/ios/app/AppDelegate.swift` and make the following changes to register for notifications and forward them to the plugin.
+2.  **If you want FCM on iOS, add Firebase to the app target**:
+    *   In the Firebase console, add an iOS app that matches your bundle identifier.
+    *   Download `GoogleService-Info.plist`.
+    *   Add it to your Xcode app target so it is bundled into the application.
+    *   In Firebase Console > Project settings > Cloud Messaging, upload your APNs authentication key or certificates so Firebase can deliver through APNs.
+    *   You do **not** need to add Firebase pods or a separate Swift package in the host app just for this plugin. The plugin already brings in `FirebaseCore` and `FirebaseMessaging` through its own iOS Swift package.
+
+3.  **Modify your AppDelegate**: Open `src-tauri/src/ios/app/AppDelegate.swift` and make the following changes to register for notifications and forward them to the plugin.
 
     ```swift
     import UIKit
@@ -87,29 +77,48 @@ This is the **critical manual step** required to make the plugin functional.
 
     class AppDelegate: TauriAppDelegate {
       override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 3. Set the notification center delegate
+        // 3. Configure Firebase early when GoogleService-Info.plist is bundled
+        PushNotificationPlugin.configureFirebaseAppIfAvailable()
+
+        // 4. Set the notification center delegate
         UNUserNotificationCenter.current().delegate = self
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
       }
 
-      // 4. Add the token registration handlers
+      // 5. Add the token registration handlers
       override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        PushNotificationPlugin.instance?.handleToken(deviceToken)
+        PushNotificationPlugin.applicationDidRegisterForRemoteNotifications(deviceToken: deviceToken)
       }
 
       override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        PushNotificationPlugin.applicationDidFailToRegisterForRemoteNotifications(error: error)
         print("Failed to register for remote notifications: \(error.localizedDescription)")
       }
 
-      // 5. Add the notification-handling delegate method
+      override func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        PushNotificationPlugin.applicationDidReceiveRemoteNotification(userInfo: userInfo)
+        completionHandler(.newData)
+      }
+
+      // 6. Add the notification-handling delegate methods
       override func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        PushNotificationPlugin.instance?.handleNotification(notification.request.content.userInfo)
+        PushNotificationPlugin.applicationDidReceiveRemoteNotification(userInfo: notification.request.content.userInfo)
         // You can customize the presentation options here
         completionHandler([.banner, .sound, .badge])
       }
+
+      override func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        PushNotificationPlugin.applicationDidReceiveNotificationResponse(userInfo: response.notification.request.content.userInfo)
+        completionHandler()
+      }
     }
     ```
+
+4.  **Understand the returned token**:
+    *   If `GoogleService-Info.plist` is present and Firebase is configured, `getToken()` returns an iOS FCM registration token.
+    *   If Firebase is not configured on iOS, `getToken()` falls back to the raw APNs token.
+    *   The AppDelegate hooks above are still required. They are the bridge from the iOS application lifecycle into the plugin. The new static forwarding methods are safe to call even before the plugin instance is loaded.
 
 ### Android Configuration
 
@@ -187,7 +196,7 @@ This step is the same for all projects.
 
 **3. Register the Notification Service**
 
-Open `src-tauri/gen/android/[YOUR_APP_NAME]/app/src/main/AndroidManifest.xml` and register the `FCMService` inside the `<application>` tag. This allows your app to receive notifications when it's in the background.
+The plugin now contributes the `FCMService` declaration and `POST_NOTIFICATIONS` permission from its library manifest. If your host app overrides manifests aggressively, verify that these entries still appear in the merged manifest. This allows your app to receive notifications when it's in the background.
 
 ```xml
 <application ...>
@@ -212,6 +221,7 @@ import {
   getToken,
   requestPermission,
   onNotificationReceived,
+  onNotificationTapped,
   onTokenRefresh
 } from 'tauri-plugin-remote-push-api';
 
@@ -228,11 +238,18 @@ const unsubscribe = await onNotificationReceived((notification) => {
   console.log('Received notification:', notification);
 });
 
+// Listen for notification taps (user opened the app via a notification)
+const unsubscribeTap = await onNotificationTapped((notification) => {
+  console.log('Notification tapped:', notification);
+});
+
 // Listen for token refreshes
 const unsubscribeToken = await onTokenRefresh((token) => {
   console.log('Token refreshed:', token);
 });
 ```
+
+If Firebase is configured on iOS, the returned token is an FCM token on both mobile platforms. If not, iOS returns an APNs token instead.
 
 ## License
 

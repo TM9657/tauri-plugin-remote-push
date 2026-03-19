@@ -1,6 +1,6 @@
 use tauri::{command, AppHandle, Runtime};
 
-use crate::{RemotePushExt, Result};
+use crate::{models::PermissionState, RemotePushExt, Result};
 
 #[command]
 pub(crate) async fn get_token<R: Runtime>(app: AppHandle<R>) -> Result<String> {
@@ -8,6 +8,6 @@ pub(crate) async fn get_token<R: Runtime>(app: AppHandle<R>) -> Result<String> {
 }
 
 #[command]
-pub(crate) fn request_permission<R: Runtime>(app: AppHandle<R>) -> Result<()> {
+pub(crate) async fn request_permission<R: Runtime>(app: AppHandle<R>) -> Result<PermissionState> {
     app.remote_push().request_permission()
 }

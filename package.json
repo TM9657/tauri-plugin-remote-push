@@ -1,8 +1,12 @@
 {
   "name": "tauri-plugin-remote-push-api",
   "version": "1.0.10",
-  "author": "You",
+  "author": "thing-e",
   "description": "A Tauri plugin for remote push notifications on iOS and Android.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thing-e/tauri-plugin-remote-push.git"
+  },
   "type": "module",
   "types": "./dist-js/index.d.ts",
   "main": "./dist-js/index.cjs",

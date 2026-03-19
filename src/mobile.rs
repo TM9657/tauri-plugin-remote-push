@@ -35,7 +35,7 @@ impl<R: Runtime> RemotePush<R> {
       .map_err(Into::into)
   }
 
-  pub fn request_permission(&self) -> crate::Result<()> {
+  pub fn request_permission(&self) -> crate::Result<PermissionState> {
     self.0
       .run_mobile_plugin("requestPermissions", ())
       .map_err(Into::into)

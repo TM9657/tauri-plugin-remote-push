@@ -1,10 +1,10 @@
 [package]
 name = "tauri-plugin-remote-push"
 version = "1.0.10"
-authors = [ "You" ]
+authors = [ "thing-e" ]
 description = "A Tauri plugin for remote push notifications on iOS and Android."
 license = "MIT"
-repository = "https://github.com/YOUR_USERNAME/tauri-plugin-remote-push" # TODO: Replace with your repository URL
+repository = "https://github.com/thing-e/tauri-plugin-remote-push"
 edition = "2021"
 rust-version = "1.77.2"
 exclude = ["/examples", "/dist-js", "/guest-js", "/node_modules"]

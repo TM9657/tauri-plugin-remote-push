@@ -19,38 +19,25 @@ Default permissions for the remote-push plugin
 <tr>
 <td>
 
-`remote-push:allow-ping`
-
-</td>
-<td>
-
-Enables the ping command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`remote-push:deny-ping`
-
-</td>
-<td>
-
-Denies the ping command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `remote-push:allow-get-token`
 
 </td>
 <td>
 
-Allows retrieving the push notification token
+Enables the get_token command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`remote-push:deny-get-token`
+
+</td>
+<td>
+
+Denies the get_token command without any pre-configured scope.
 
 </td>
 </tr>
@@ -63,7 +50,20 @@ Allows retrieving the push notification token
 </td>
 <td>
 
-Allows requesting user permission for notifications
+Enables the request_permission command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`remote-push:deny-request-permission`
+
+</td>
+<td>
+
+Denies the request_permission command without any pre-configured scope.
 
 </td>
 </tr>

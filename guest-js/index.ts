@@ -1,4 +1,16 @@
-import { invoke, type PluginListener } from '@tauri-apps/api/core'
+import { addPluginListener, invoke, type PluginListener } from '@tauri-apps/api/core'
+
+interface NativePushNotificationPayload {
+  notification?: {
+    title?: string
+    body?: string
+  }
+  data: Record<string, any>
+  badge?: number
+  sound?: string
+  channelId?: string
+  category?: string
+}
 
 export interface PushNotification {
   title?: string;
@@ -23,17 +35,35 @@ export async function requestPermission(): Promise<{ granted: boolean }> {
 export async function onNotificationReceived(
   handler: (notification: PushNotification) => void
 ): Promise<PluginListener> {
-  return await invoke("plugin:remote-push|on_notification_received", { handler });
+  return await addPluginListener<NativePushNotificationPayload>('remote-push', 'notification-received', (payload) => {
+    handler(normalizeNotification(payload))
+  })
 }
 
 export async function onTokenRefresh(
   handler: (token: string) => void
 ): Promise<PluginListener> {
-  return await invoke("plugin:remote-push|on_token_refresh", { handler });
+  return await addPluginListener<{ token: string }>('remote-push', 'token-received', ({ token }) => {
+    handler(token)
+  })
 }
 
 export async function onNotificationTapped(
   handler: (notification: PushNotification) => void
 ): Promise<PluginListener> {
-  return await invoke("plugin:remote-push|on_notification_tapped", { handler });
+  return await addPluginListener<NativePushNotificationPayload>('remote-push', 'notification-tapped', (payload) => {
+    handler(normalizeNotification(payload))
+  })
+}
+
+function normalizeNotification(payload: NativePushNotificationPayload): PushNotification {
+  return {
+    title: payload.notification?.title,
+    body: payload.notification?.body,
+    data: payload.data,
+    badge: payload.badge,
+    sound: payload.sound,
+    channelId: payload.channelId,
+    category: payload.category,
+  }
 }
