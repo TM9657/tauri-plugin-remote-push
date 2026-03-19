@@ -21,12 +21,12 @@ import java.util.Collections
 
 val mainScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-private data class NotificationContent(
+internal data class NotificationContent(
     val title: String? = null,
     val body: String? = null,
 )
 
-private data class NotificationPayload(
+internal data class NotificationPayload(
     val notification: NotificationContent? = null,
     val data: Map<String, String> = emptyMap(),
 ) {
@@ -187,7 +187,7 @@ class PushNotificationPlugin(private val activity: Activity) : Plugin(activity) 
         trigger("notification-tapped", payload.toJSObject())
     }
 
-    private fun looksLikePushIntent(extras: Bundle): Boolean {
+    internal fun looksLikePushIntent(extras: Bundle): Boolean {
         return extras.containsKey("google.message_id")
             || extras.containsKey("message_id")
             || extras.keySet().any { it.startsWith("google.") || it.startsWith("gcm.") }

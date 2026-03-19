@@ -114,7 +114,7 @@ public class PushNotificationPlugin: Plugin, MessagingDelegate {
         self.trigger("notification-tapped", data: Self.normalizePayload(userInfo))
     }
 
-    private static func normalizePayload(_ userInfo: [AnyHashable: Any]) -> JSObject {
+    static func normalizePayload(_ userInfo: [AnyHashable: Any]) -> JSObject {
         var result: JSObject = [:]
 
         // Extract notification title/body from aps.alert

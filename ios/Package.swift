@@ -26,6 +26,10 @@ let package = Package(
         .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
         .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
       ],
-      path: "Sources")
+      path: "Sources"),
+    .testTarget(
+      name: "tauri-plugin-remote-push-tests",
+      dependencies: ["tauri-plugin-remote-push"],
+      path: "Tests")
   ]
 )

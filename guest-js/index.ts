@@ -1,6 +1,6 @@
 import { addPluginListener, invoke, type PluginListener } from '@tauri-apps/api/core'
 
-interface NativePushNotificationPayload {
+export interface NativePushNotificationPayload {
   notification?: {
     title?: string
     body?: string
@@ -56,7 +56,7 @@ export async function onNotificationTapped(
   })
 }
 
-function normalizeNotification(payload: NativePushNotificationPayload): PushNotification {
+export function normalizeNotification(payload: NativePushNotificationPayload): PushNotification {
   return {
     title: payload.notification?.title,
     body: payload.notification?.body,

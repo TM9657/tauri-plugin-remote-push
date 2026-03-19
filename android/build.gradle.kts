@@ -34,4 +34,6 @@ dependencies {
     // This correctly points to the local :tauri-android module included by settings.gradle
     compileOnly(project(":tauri-android"))
     implementation("com.google.firebase:firebase-messaging:23.4.1")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(project(":tauri-android"))
 } 
