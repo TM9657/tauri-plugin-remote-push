@@ -22,7 +22,8 @@ mod tests {
 
     #[test]
     fn permission_state_deserializes_from_camel_case() {
-        let state: PermissionState = serde_json::from_value(serde_json::json!({"granted": true})).unwrap();
+        let state: PermissionState =
+            serde_json::from_value(serde_json::json!({"granted": true})).unwrap();
         assert!(state.granted);
     }
 

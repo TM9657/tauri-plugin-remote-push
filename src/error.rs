@@ -4,20 +4,20 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-  #[error(transparent)]
-  Io(#[from] std::io::Error),
-  #[cfg(mobile)]
-  #[error(transparent)]
-  PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[cfg(mobile)]
+    #[error(transparent)]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
 }
 
 impl Serialize for Error {
-  fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-  where
-    S: Serializer,
-  {
-    serializer.serialize_str(self.to_string().as_ref())
-  }
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
 }
 
 #[cfg(test)]
@@ -26,7 +26,10 @@ mod tests {
 
     #[test]
     fn io_error_serializes_as_string() {
-        let error = Error::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "file not found"));
+        let error = Error::Io(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "file not found",
+        ));
         let json = serde_json::to_string(&error).unwrap();
         assert_eq!(json, "\"file not found\"");
     }

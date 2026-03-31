@@ -2,6 +2,7 @@ import FirebaseCore
 import FirebaseMessaging
 import UIKit
 import UserNotifications
+import WebKit
 import Tauri
 import SwiftRs
 
@@ -76,7 +77,7 @@ public class PushNotificationPlugin: Plugin, MessagingDelegate {
         registerForRemoteNotifications()
     }
 
-    @objc public func requestPermissions(_ invoke: Invoke) {
+    @objc override public func requestPermissions(_ invoke: Invoke) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
             if let error = error {
                 invoke.reject(error.localizedDescription)
@@ -220,4 +221,9 @@ public class PushNotificationPlugin: Plugin, MessagingDelegate {
         PushNotificationPlugin.pendingTappedNotifications.removeAll()
         queuedTappedNotifications.forEach(handleNotificationTapped)
     }
-} 
+}
+
+@_cdecl("init_plugin_remote_push")
+func initPlugin() -> Plugin {
+    return PushNotificationPlugin()
+}
